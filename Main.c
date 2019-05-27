@@ -42,12 +42,12 @@ int main(){
 		artistRoot[i] = NULL;
 	}
 	
-	Info info = readFile("input-mpaa.txt");
+	Info info = readFile("test2.txt");
 	
 	
 	//printTable(info.artists);
 	
-	/*for(i = 0; i < MAX_ARTIST; i++){
+	for(i = 0; i < MAX_ARTIST; i++){
 		if(i < MAX_FILM && strlen(info.films[i]) > 0){
 			printf("film[%d] %s: ",i,info.films[i]);
 			printList(filmRoot[i]);
@@ -57,8 +57,10 @@ int main(){
 			printList(artistRoot[i]);	
 		}
 		
-	}*/
-	bfs(info, "Pitt, Brad","Pitt, Brad");
+	}
+	bfs(info, "1","4");
+	printf("fin");
+	printf("end");
 	return(0);
 }
 
@@ -253,8 +255,14 @@ void bfs(Info info, char source[100], char dest[100]){
 		visFilms[iter->val] = 1;
 		iter = iter->next;
 	}
-	
-	printf("\ns:%d, d:%d\n",s,d);
+	printf("\nArtists:");
+	for(i = 0; i<6;i++){
+		printf("%d ",visArtist[i]);
+	}
+	printf("\nFilms:");
+	for(i = 0; i<6;i++){
+		printf("%d ",visFilms[i]);
+	}
 	int counter = 1;
 	
 	while(1){
@@ -264,10 +272,18 @@ void bfs(Info info, char source[100], char dest[100]){
 			while(iter!= NULL){
 				if(visArtist[info.artists.node[iter->val].idx] == 0){
 					enqueue(qA,info.artists.node[iter->val].idx);
-					visArtist[info.artists.node[iter->val].idx] = counter;
+					visArtist[info.artists.node[iter->val].idx] = info.artists.node[iter->val].idx;
 				}
 
 				if(info.artists.node[iter->val].idx == d){
+						printf("\nArtists:");
+						for(i = 0; i<6;i++){
+							printf("%d ",visArtist[i]);
+						}
+						printf("\nFilms:");
+						for(i = 0; i<6;i++){
+							printf("%d ",visFilms[i]);
+						}
 					printf("Bulduk!");
 					printf("counter:%d",counter);
 					
@@ -276,17 +292,33 @@ void bfs(Info info, char source[100], char dest[100]){
 				iter = iter->next;
 			}
 		}
-		
+		//printf("%d",counter);
+		printf("\nArtists:");
+		for(i = 0; i<6; i++){
+			printf("%d ",visArtist[i]);
+		}
+		printf("\nFilms:");
+		for(i = 0; i<6; i++){
+			printf("%d ",visFilms[i]);
+		}
 		while(!isEmpty(qA)){
 			element = dequeue(qA);
 			iter = artistRoot[element]->next;
 			while(iter != NULL){
 				if(visFilms[iter->val] == 0){
 					enqueue(qF,iter->val);
-					visFilms[iter->val] = counter;
+					visFilms[iter->val] = iter->val;
 				}
 				iter = iter->next;
 			}
+		}
+		printf("\nArtists:");
+		for(i = 0; i<6;i++){
+			printf("%d ",visArtist[i]);
+		}
+		printf("\nFilms:");
+		for(i = 0; i<6;i++){
+			printf("%d ",visFilms[i]);
 		}
 		counter++;
 	}
