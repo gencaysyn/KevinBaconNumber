@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#define SIZE 500000
+#define SIZE 180000
 
 struct queue {
     int items[SIZE];

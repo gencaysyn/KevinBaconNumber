@@ -226,9 +226,9 @@ void bfs(Info info, char source[100], char dest[100]){
 	int visArtist[MAX_ARTIST];
 	struct queue *qA = createQueue();
 	struct queue *qF = createQueue();
+	struct queue *qback = createQueue();
 	int element;
 	int i;
-	printf("s:%s, d:%s\n",source,dest);
 	if(!strcmp(source,dest)){
 		printf("%s\n",source);
 		printf("Bacon Number is 0\n");
@@ -254,9 +254,9 @@ void bfs(Info info, char source[100], char dest[100]){
 		iter = iter->next;
 	}
 	
-	
 	printf("\ns:%d, d:%d\n",s,d);
 	int counter = 1;
+	
 	while(1){
 		while(!isEmpty(qF)){
 			element = dequeue(qF);
@@ -270,11 +270,13 @@ void bfs(Info info, char source[100], char dest[100]){
 				if(info.artists.node[iter->val].idx == d){
 					printf("Bulduk!");
 					printf("counter:%d",counter);
+					
 					exit(1);
 				}
 				iter = iter->next;
 			}
 		}
+		
 		while(!isEmpty(qA)){
 			element = dequeue(qA);
 			iter = artistRoot[element]->next;
