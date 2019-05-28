@@ -20,21 +20,21 @@ typedef struct s
 }node;
 
 node* createNode(int);
-void  addElement(node**,node*);
-void  printList (node*);
-void  freeList  (char* ,node**);
-Info readFile(char* );
-Info initialize(int , int);
-void deInitialize(Info*, int, int);
-//int isContains(char**,int,char*);
-void bfs(Info, char[100], char[100]);
-int getArtId(Info , char [100]);
+void  addElement(node**,node*); // Linkli listeye eleman eklemek için kullanýlýr listeyi ve eklenecek deðeri alýr.
+void  printList (node*); // Listeyi yazdýrýr.
+void  freeList  (char* ,node**); // Listeyi serbest býrakýr.
+Info readFile(char* ); // Dosyayý okur ve verileri yapýya kaydeder.
+Info initialize(int , int); // Film ve artistlerin saklanacaðý veriyi ilklendirir.
+void deInitialize(Info*, int, int); // Film ve artistlerin saklandýðý yapýyý serbest býrakýr.
+void bfs(Info, char[100], char[100]); // BFS iþleminin yapýldýðý kod kaynak ve hedef deðerlerini alýr ve sonucu yazdýrýr.
+int getArtId(Info , char [100]); // Hash map'te isimle yapýlan aramanýn sonucunu döndürür.
 
-node *filmRoot[MAX_FILM] ;
-node *artistRoot[MAX_ARTIST];
+node *filmRoot[MAX_FILM] ; // Filmlerin saklandýðý yapý.
+node *artistRoot[MAX_ARTIST]; // Artistlerin saklandýðý yapý.
 
 int main(){
 
+	// Filmlerin ve Artistlerin isimlerinin tutulacaðý yapýnýn ilklendirilmesi
 	int i;
 	for(i = 0; i < MAX_ARTIST; i++){
 		if(i < MAX_FILM)
@@ -42,23 +42,19 @@ int main(){
 		artistRoot[i] = NULL;
 	}
 	
+	//Dosya Okuma ve verilerin kaydedilmesi iþlemi
 	Info info = readFile("input-mpaa.txt");
 	
+	char art1[100],art2[100];
+	printf("   Kevin Bacon Number\n");
+	printf("Please enter the first artist's name:");
+	gets(art1);
+	printf("Please enter the second artist's name:");
+	gets(art2);
+
+	bfs(info, art1, art2);
 	
-	//printTable(info.artists);
-	
-	/*for(i = 0; i < MAX_ARTIST; i++){
-		if(i < MAX_FILM && strlen(info.films[i]) > 0){
-			printf("film[%d] %s: ",i,info.films[i]);
-			printList(filmRoot[i]);
-		}
-		if(artistRoot[i] != NULL){
-			printf("artist[%d] %s : ",i, info.artists.node[artistRoot[i][0].val].val);	
-			printList(artistRoot[i]);	
-		}
-		
-	}*/
-	bfs(info, "Pitt, Brad","Pitt, Brad");
+	deInitialize(&info, MAX_FILM, MAX_ARTIST);
 	return(0);
 }
 
@@ -94,12 +90,10 @@ void addElement(node **rootPtr, node *newNode)
 
 void printList(node *root)
 {
-	if(root == NULL)
-	{
+	if(root == NULL){
 		printf("list is empty!");
 	}
-	else
-	{
+	else{
 		node *i = root;
 		while(i != NULL)
 		{
@@ -114,11 +108,9 @@ void freeList(char *name, node **rootPtr)
 {
 	if(*rootPtr == NULL)
 		printf(" %s listesi zaten bos!\n", name);
-	else
-	{
+	else{
 		node *prev = *rootPtr;
-		while(*rootPtr != NULL)
-		{
+		while(*rootPtr != NULL){
 			*rootPtr = (*rootPtr)->next;
 			free(prev);
 			prev = *rootPtr;	
@@ -159,15 +151,6 @@ void deInitialize(Info *info, int maxFilm, int maxArtist){
 	free(info->films);
 }
 
-int find(char** array ,int N,char* word){
-	int i = 0;
-	while(i<N && strcmp(array[i],word))
-		i++;
-	if(i == N)
-		return -1;
-	return i-1;
-}
-
 Info readFile(char* fileName){
 	FILE * fp;
 	Info info = initialize(MAX_FILM,MAX_ARTIST);
@@ -183,16 +166,18 @@ Info readFile(char* fileName){
 		
 		fgets(str,sizeof(str),fp);
 		char last = str[strlen(str) -1];
-		if(last == '\n')str[strlen(str) -1] = '\0';
+		if(last == '\n')str[strlen(str) -1] = '\0'; // Satýr sonlarýnýn stringe dahil edilmesine karþý önlem.
 		
-		char *each =  strtok(str,delim);
+		char *each =  strtok(str,delim); // Veri '/' iþaretine göre elemanlara ayrýlýyor ilk eleman film diðer elemanlar is oyuncularý temsil ediyor.
 		strcpy(info.films[info.filmCount],each);
 		fRoot = (&filmRoot[info.filmCount]);
-		addElement(fRoot,createNode(info.filmCount));
+		addElement(fRoot,createNode(info.filmCount)); // Filmi linkli listeye ekleyen kýsým.
 		each =  strtok(NULL,delim);
 		int result;
 		char buffer[100];
 	
+		// Filmi ekledikten sonra oyuncularý tekrar tekrar eklememek için önce bir kontrolden geçiyor yoksa ekleniyor.
+		// Satýrda eleman kalmayýncaya dek bu iþlem devam ediyor.
 		while(each != NULL){
 			strcpy(buffer,each);
 			result = search(info.artists,buffer);
@@ -218,15 +203,19 @@ Info readFile(char* fileName){
 }
 
 int getArtId(Info info, char word[100]){
-	return info.artists.node[search(info.artists,word)].idx;
+	int result = search(info.artists,word);
+	if(result == -1){
+		printf("'%s' Artist Not Found!",word);
+		exit(404);
+	}
+	return info.artists.node[result].idx;
 }
 
 void bfs(Info info, char source[100], char dest[100]){
 	int visFilms[MAX_FILM];
 	int visArtist[MAX_ARTIST];
-	struct queue *qA = createQueue();
-	struct queue *qF = createQueue();
-	struct queue *qback = createQueue();
+	struct queue *qA = createQueue(); // Oyuncularýn tutulduðu kuyruk
+	struct queue *qF = createQueue(); // Filmlerin tutulduðu kuyruk
 	int element;
 	int i;
 	if(!strcmp(source,dest)){
@@ -235,55 +224,73 @@ void bfs(Info info, char source[100], char dest[100]){
 		return;
 	}
 	
-	for(i=0;i<MAX_ARTIST;i++){
+	for(i=0;i<MAX_ARTIST;i++){ // Visited dizilerinin ilklendirilmesi.
 		if(i<MAX_FILM){
-			visFilms[i] = 0;
+			visFilms[i] = -1;
 		}
-		visArtist[i] = 0;
+		visArtist[i] = -1;
 	}
 	
 	int s = getArtId(info,source);
 	int d = getArtId(info,dest);
-	visArtist[s] = 1;
-	
+	visArtist[s] = s;
 	node *iter = artistRoot[s]->next;
 	
 	while(iter != NULL){		
 		enqueue(qF,iter->val);
-		visFilms[iter->val] = 1;
+		visFilms[iter->val] = s;
 		iter = iter->next;
 	}
-	
-	printf("\ns:%d, d:%d\n",s,d);
+
 	int counter = 1;
-	
-	while(1){
+	while(counter < 7){ // Kevin Bacon sayýsýnýn sýnýrý.
+		// Önce Filmler kuyruktan çekiliyor ve komþularý oyuncu kuyruðuna eklendikten sonra 
+		// visited dizisinde hangi oyuncu tarafýndan iþaretlendiði tutularak iþaretleniyor.
 		while(!isEmpty(qF)){
 			element = dequeue(qF);
 			iter = filmRoot[element]->next;
 			while(iter!= NULL){
-				if(visArtist[info.artists.node[iter->val].idx] == 0){
+				if(visArtist[info.artists.node[iter->val].idx] == -1){
 					enqueue(qA,info.artists.node[iter->val].idx);
-					visArtist[info.artists.node[iter->val].idx] = counter;
+					visArtist[info.artists.node[iter->val].idx] = element;
 				}
 
-				if(info.artists.node[iter->val].idx == d){
-					printf("Bulduk!");
-					printf("counter:%d",counter);
+				if(info.artists.node[iter->val].idx == d){	//Oyuncu bulunduðu zaman Deðer buraya düþer ve tersine giderek yazdýrma iþlemi yapýlýr
+					printf("Bacon Number is %d\n",counter);
 					
-					exit(1);
+					int index = visArtist[d];
+					int fac = 0;
+					
+					printf("Artist: %s\n", info.artists.node[artistRoot[d][0].val].val);	
+					while(index != s){
+						if(fac == 0){
+							fac = 1;
+							printf("Film: %s\n",info.films[index]);
+							index = visFilms[index];
+						}else{
+							fac = 0;
+							printf("Artist: %s\n", info.artists.node[artistRoot[index][0].val].val);
+							index = visArtist[index];
+						}
+					}
+					if(fac == 0)
+						printf("Film: %s\n", info.films[visFilms[index]]);
+					printf("Artist: %s\n",info.artists.node[artistRoot[s][0].val].val);
+					
+					return;
 				}
 				iter = iter->next;
 			}
 		}
-		
+		// Yukarda yapýlan iþlem tersine Artistler için yapýlýyor tek tek kuyruktan çekilip
+		// Komþularý kaydediliyor ve kendisi hangi filmden geldiði bilgisiyle iþarteleniyor
 		while(!isEmpty(qA)){
 			element = dequeue(qA);
 			iter = artistRoot[element]->next;
 			while(iter != NULL){
-				if(visFilms[iter->val] == 0){
+				if(visFilms[iter->val] == -1){
 					enqueue(qF,iter->val);
-					visFilms[iter->val] = counter;
+					visFilms[iter->val] = element;
 				}
 				iter = iter->next;
 			}
